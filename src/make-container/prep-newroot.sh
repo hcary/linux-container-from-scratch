@@ -26,3 +26,7 @@ fi
 
 mkdir ${TARGET}
 debootstrap stable ${TARGET} http://httpredir.debian.org/debian/
+
+echo "chroot ${TARGET} /bin/sh" > ${TARGET}/fs-isolate.sh
+echo "mount -t proc none /proc" >> ${TARGET}/fs-isolate.sh
+
