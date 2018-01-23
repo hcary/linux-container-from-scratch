@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#export TARGET="/var/new.root"
+export TARGET="/var/new.root"
 
-chroot ${TARGET} /bin/sh
+chroot ${TARGET} /bin/bash
 mount -t proc none /proc
