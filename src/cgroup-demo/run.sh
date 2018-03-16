@@ -16,6 +16,6 @@ echo "100000000" > /sys/fs/cgroup/memory/demo/memory.limit_in_bytes
 echo "Turn off Swap by placing 0 in /sys/fs/cgroup/memory/demo/memory.swappiness"
 echo "0" > /sys/fs/cgroup/memory/demo/memory.swappiness
 
-echo "echo \$$ > /sys/fs/cgroup/memory/demo/tasks"
+#echo "echo \$$ > /sys/fs/cgroup/memory/demo/tasks"
 
 echo
