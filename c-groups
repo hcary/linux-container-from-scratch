@@ -1,0 +1,34 @@
+#!/bin/bash
+
+echo $1
+
+# Check for argument (PID)
+if [ -z "$1" ]; then
+    echo "Usage: $0 <PID>"
+    exit 1
+fi
+
+echo "Target PID: $1"
+
+CGROUP_PATH="/sys/fs/cgroup"
+MEM_CGROUP="$CGROUP_PATH/demo"
+
+# Create cgroup v2 directory if not exists (kernel 6.x uses unified hierarchy)
+sudo mkdir -p "$MEM_CGROUP"
+echo
+echo "------------------------------------------------------"
+echo
+
+ls "$MEM_CGROUP"
+echo
+echo "------------------------------------------------------"
+echo
+
+echo "Set memory limit to 100MB by updating $MEM_CGROUP/memory.max"
+echo "100000000" | sudo tee "$MEM_CGROUP/memory.max" > /dev/null
+
+echo "Turn off Swap by placing max in $MEM_CGROUP/memory.swap.max"
+echo "0" | sudo tee "$MEM_CGROUP/memory.swap.max" > /dev/null
+
+echo "Adding session to cgroup by placing $1 into $MEM_CGROUP/cgroup.procs"
+echo $1 | sudo tee "$MEM_CGROUP/cgroup.procs" > /dev/null
