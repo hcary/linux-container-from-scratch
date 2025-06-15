@@ -1,7 +1,6 @@
 #!/bin/bash
 
-CGROUP_PATH="/sys/fs/cgroup"
-MEM_CGROUP="$CGROUP_PATH/demo"
+source env-setup
 
 echo "sudo rm -rf $MEM_CGROUP"
 sudo rm -rf "$MEM_CGROUP"

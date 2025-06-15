@@ -1,1 +1,5 @@
 export TARGET="/var/new.root"
+
+# cgroups values
+export CGROUP_PATH="/sys/fs/cgroup"
+export MEM_CGROUP="$CGROUP_PATH/demo"

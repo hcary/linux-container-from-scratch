@@ -10,8 +10,7 @@ fi
 
 echo "Target PID: $1"
 
-CGROUP_PATH="/sys/fs/cgroup"
-MEM_CGROUP="$CGROUP_PATH/demo"
+source env-setup
 
 # Create cgroup v2 directory if not exists (kernel 6.x uses unified hierarchy)
 sudo mkdir -p "$MEM_CGROUP"

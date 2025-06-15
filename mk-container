@@ -3,7 +3,8 @@
 # This script sets up a new container environment using debootstrap and configures networking for it.
 # It creates a new root filesystem in /var/new.root and sets up a network namespace with a virtual Ethernet pair.
 # It also configures iptables for NAT and forwarding between the new namespace and the host network.
-source env-setuo 
+source env-setup
+
 
 # Verify running on Linux
 if [[ "$(uname -s)" != "Linux" ]]; then
