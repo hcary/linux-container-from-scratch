@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# This script sets up a new container environment using debootstrap and configures networking for it.
+# It creates a new root filesystem in /var/new.root and sets up a network namespace with a virtual Ethernet pair.
+# It also configures iptables for NAT and forwarding between the new namespace and the host network.
+source env-setup
+
+set -e
+
+# Check if TARGET is set
+if [ -z "$TARGET" ]; then
+  echo "Error: TARGET is not set. Exiting."
+  exit 1
+fi
+
+# Clean up veth and network namespace
+echo "[*] Tearing down network namespace and interfaces..."
+if ip netns list | grep -q netns1; then
+  ip netns exec netns1 ip link set veth1 down 2>/dev/null || true
+  ip netns exec netns1 ip link delete veth1 2>/dev/null || true
+  ip netns del netns1
+fi
+
+ip link delete veth0 2>/dev/null || true
+
+# Remove iptables rules (adjust if shared rules exist)
+echo "[*] Removing iptables rules..."
+iptables -D FORWARD -i enp0s3 -o veth0 -j ACCEPT 2>/dev/null || true
+iptables -D FORWARD -o enp0s3 -i veth0 -j ACCEPT 2>/dev/null || true
+iptables -t nat -D POSTROUTING -s 172.16.99.100/24 -o enp0s3 -j MASQUERADE 2>/dev/null || true
+
+# Optional: Flush tables (be cautious if shared with other services)
+iptables -F FORWARD 2>/dev/null || true
+iptables -t nat -F 2>/dev/null || true
+iptables -P FORWARD ACCEPT 2>/dev/null || true
+
+# Unmount target filesystems if mounted
+echo "[*] Unmounting chroot filesystems from $TARGET..."
+for fs in proc sys dev run; do
+  if mountpoint -q "${TARGET}/$fs"; then
+    umount -lf "${TARGET}/$fs" 2>/dev/null || echo "Failed to unmount ${TARGET}/$fs"
+  fi
+done
+
+# Clean up rootfs
+echo "[*] Cleaning up target directory..."
+rm -rf "${TARGET}"
+
+echo "[*] Teardown complete."
