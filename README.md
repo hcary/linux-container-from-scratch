@@ -1,28 +1,79 @@
-# linux-container
+# Linux Container From Scratch
 
-**ip netns exec NAME cmd**
+This project demonstrates how to build a minimal Linux container environment from scratch using Bash scripts, Linux namespaces, cgroups, and basic networking tools. It is intended for educational purposes and for those interested in understanding the low-level mechanics behind containerization.
 
-Run cmd in the named network namespace This command allows applications that are network namespace unaware to be run in something other than the default network namespace with all of the configuration for the specified network namespace appearing in the customary global locations.
+## Features
 
-## cgroup demo
+- **Root Filesystem Creation:** Uses `debootstrap` to create a minimal Debian root filesystem.
+- **Namespace Isolation:** Sets up new mount, UTS, IPC, PID, and network namespaces for the container.
+- **Virtual Networking:** Creates a virtual Ethernet pair and configures a dedicated network namespace.
+- **NAT and Forwarding:** Uses `iptables` to enable NAT and forwarding between the container and the host.
+- **Resource Limits:** Example scripts for cgroup v2 memory limiting.
+- **Cleanup:** Automated teardown of namespaces, interfaces, iptables rules, and root filesystem.
 
-This demo displays the power of cgroups in the Linux kernel and how they can be implemented to protect your system from rogue processes.
+## Requirements
 
-**run.sh** 
+- Linux system (tested on kernel 6.x)
+- Root privileges
+- `debootstrap`, `iproute2`, `iptables`, `unshare`
+- Network interface name (default: `enp0s3`, adjust as needed)
 
- 1. This script creates a demo to the heiarchy under the cgroup memory.
- 2. Set a memory limit of 100MB 
- 3. Turn off swap for this cgroup
+## Usage
 
-**add-to-cgroup.sh**
+### 1. Environment Setup
 
- 1. Add the pid for the current shell to the cgroup created above
+Edit `env-setup` to set the `TARGET` directory and any other environment variables.
 
-**mem-leak.py**
-This script is an infinite loop that grabs 10MB of RAM with each iteration. When it is ran prior to running add-to-cgroup or manually adding the pid to the appropriate cgroup the script will run until it crashes you machine. Once the pid is of the session is added the script will be killed automatically when the memory used by the shell and the script break 100MB.
- 
-**Demo**
+### 2. Build and Start Container
 
-sudo ./run.sh
-sudo ./add-to-cgroup $$
-sudo ./cleanup.sh
+```bash
+sudo ./mk-container
+```
+
+This will:
+- Create a new root filesystem at `$TARGET`
+- Set up namespaces and networking
+- Configure NAT and forwarding
+
+### 3. Run a Demo Process (Optional)
+
+You can use the provided Python memory leak demo:
+
+```bash
+sudo python3 src/cgroup-demo/mem-leak.py
+```
+
+### 4. Cleanup
+
+To undo all changes and clean up:
+
+```bash
+sudo ./mk-container-cleanup
+```
+
+This will:
+- Remove network namespaces and veth pairs
+- Delete iptables rules
+- Unmount filesystems
+- Remove the root filesystem
+
+## Notes
+
+- The scripts assume the use of `enp0s3` as the host network interface. Change this in the scripts if your interface is different.
+- All destructive actions (like removing `$TARGET`) are performed without confirmation.
+- Use with caution on production systems.
+
+## Files
+
+- `mk-container` — Main script to build and start the container environment
+- `mk-container-cleanup` — Script to tear down and clean up everything
+- `env-setup` — Environment variable definitions (edit as needed)
+- `src/cgroup-demo/mem-leak.py` — Python demo for cgroup memory limiting
+
+## License
+
+MIT License
+
+---
+
+**For educational use only.**
